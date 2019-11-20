@@ -37,6 +37,7 @@ ifeq ($(LINK_TARGET),)
   ifneq ($(TARGET),freedom-e310-arty)
   ifneq ($(TARGET),sifive-hifive1)
   ifneq ($(TARGET),sifive-hifive1-revb)
+  ifneq ($(TARGET),sparkfun-red-v)
     LINK_TARGET = ramrodata
   endif
   endif
