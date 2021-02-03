@@ -30,6 +30,7 @@ extern __inline__ int __metal_driver_cpu_hartid(struct metal_cpu *cpu);
 extern __inline__ int __metal_driver_cpu_timebase(struct metal_cpu *cpu);
 extern __inline__ struct metal_interrupt * __metal_driver_cpu_interrupt_controller(struct metal_cpu *cpu);
 extern __inline__ int __metal_driver_cpu_num_pmp_regions(struct metal_cpu *cpu);
+extern __inline__ struct metal_buserror * __metal_driver_cpu_buserror(struct metal_cpu *cpu);
 
 
 /* --------------------- sifive_plic0 ------------ */
@@ -42,7 +43,7 @@ extern __inline__ int __metal_driver_sifive_plic0_interrupt_lines(struct metal_i
 extern __inline__ int __metal_driver_sifive_plic0_context_ids(int hartid);
 
 
-/* --------------------- sifive_ccache0 ------------ */
+/* --------------------- sifive_buserror0 ------------ */
 
 
 /* --------------------- sifive_clic0 ------------ */
@@ -69,6 +70,9 @@ extern __inline__ int __metal_driver_sifive_plic0_context_ids(int hartid);
 /* --------------------- sifive_i2c0 ------------ */
 
 
+/* --------------------- sifive_pwm0 ------------ */
+
+
 /* --------------------- sifive_rtc0 ------------ */
 
 
@@ -92,6 +96,9 @@ extern __inline__ unsigned long __metal_driver_sifive_uart0_pinmux_output_select
 extern __inline__ unsigned long __metal_driver_sifive_uart0_pinmux_source_selector(struct metal_uart *uart);
 
 
+/* --------------------- sifive_simuart0 ------------ */
+
+
 /* --------------------- sifive_wdog0 ------------ */
 
 
@@ -110,23 +117,9 @@ extern __inline__ unsigned long __metal_driver_sifive_uart0_pinmux_source_select
 /* --------------------- fe310_g000_prci ------------ */
 
 
-/* --------------------- sifive_fu540_c000_l2 ------------ */
-
-
-struct metal_memory __metal_dt_mem_memory_80010000 = {
-    ._base_address = 2147549184UL,
-    ._size = 134213632UL,
-    ._attrs = {
-        .R = 1,
-        .W = 1,
-        .X = 1,
-        .C = 1,
-        .A = 1},
-};
-
 struct metal_memory __metal_dt_mem_memory_80000000 = {
     ._base_address = 2147483648UL,
-    ._size = 65536UL,
+    ._size = 2147483648UL,
     ._attrs = {
         .R = 1,
         .W = 1,
@@ -144,6 +137,7 @@ struct __metal_driver_riscv_clint0 __metal_dt_clint_2000000 = {
 /* From cpu@0 */
 struct __metal_driver_cpu __metal_dt_cpu_0 = {
     .cpu.vtable = &__metal_driver_vtable_cpu.cpu_vtable,
+    .hpm_count = 0,
 };
 
 /* From interrupt_controller */
@@ -157,6 +151,8 @@ struct __metal_driver_riscv_plic0 __metal_dt_interrupt_controller_c000000 = {
     .controller.vtable = &__metal_driver_vtable_riscv_plic0.plic_vtable,
     .init_done = 0,
 };
+
+struct metal_pmp __metal_dt_pmp;
 
 /* From test@100000 */
 struct __metal_driver_sifive_test0 __metal_dt_test_100000 = {

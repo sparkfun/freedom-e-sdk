@@ -19,6 +19,40 @@ ifneq ($(BOARD),)
 TARGET ?= $(BOARD)
 endif
 
+# If the make command goal is any of the Freedom Studio goals
+# then there is no need to include any of the other makefiles
+# as we are not really building anything real.
+ifeq ($(MAKECMDGOALS),standalone)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),freedomstudio-api-version)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-e-sdk-info)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-targets)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-target-tags)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-target-info)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-programs)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-program-tags)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-program-info)
+NO_INCLUDES = true
+endif
+ifeq ($(MAKECMDGOALS),list-options)
+NO_INCLUDES = true
+endif
+
 # Default PROGRAM and TARGET
 PROGRAM ?= hello
 TARGET ?= $(shell find $(TARGET_ROOT)/bsp/* -type d | head -n 1 | rev | cut -d '/' -f 1 | rev)
@@ -87,7 +121,17 @@ endif
 #  - Setting the toolchain path with CROSS_COMPILE and RISCV_PATH
 #  - Providing the software and $(PROGRAM_ELF) Make targets for Metal
 
+ifeq ($(NO_INCLUDES),)
 include scripts/standalone.mk
+endif
+
+##############################################################
+# Virtualenv Script Include
+##############################################################
+
+ifeq ($(NO_INCLUDES),)
+include scripts/virtualenv.mk
+endif
 
 #############################################################
 # Prints help message
@@ -154,6 +198,7 @@ clean:
 # format or fixed text of the output without consulting the
 # Freedom Studio dev team.
 #############################################################
+include freedom-e-sdk.mk
 
 #############################################################
 # Prints freedostudio api version .  This version should be 
@@ -163,10 +208,23 @@ clean:
 # A given version of Freedom Studio may not support 
 # 'future' versions of freedom-e-sdk.  Backward support
 # should be supported.
+#
+# 1.0 - Original API
+# 1.1 - Added list-e-sdk-info, list-target-info, list-program-info and list-program-tags targets
 #############################################################
 .PHONY: freedomstudio-api-version
 freedomstudio-api-version:
-	@echo 1.0
+	@echo 1.1
+
+# Lists Freedom Studio specific info from the freedom-e-sdk.mk file
+# The E_SDK_TAGS is used to signal which features this E-SDK supports
+# The E_SDK_REQS is used to signal which tools FS should usewith this FESDK: e-gcc8 or e-gcc10
+# Freedom Studio uses this target.  Changing this target may break Freedom Studio's
+# ability to create new projects.
+.PHONY: list-e-sdk-info
+list-e-sdk-info:
+	@echo e-sdk-tags: $(E_SDK_TAGS)
+	@echo e-sdk-reqs: $(E_SDK_REQS)
 
 # Find all settings.mk with TARGET_REQUIRE_TAGS in TARGET_TAGS
 # Freedom Studio uses this macro.  Changing this macro may break Freedom Studio's
@@ -204,12 +262,70 @@ list-target-tags:
 		sort | \
 		uniq)
 
+# Lists Freedom Studio specific info from the settings.mk file for TARGET
+# The RISCV_ARCH is used to signal which ISA incl. extensions this TARGET supports
+# The TARGET_TAGS is used to signal which tools FS should use: qemu, openocd, ...
+# Freedom Studio uses this target.  Changing this target may break Freedom Studio's
+# ability to create new projects.
+.PHONY: list-target-info
+list-target-info:
+	@echo riscv-arch: $(shell find $(TARGET_ROOT)/bsp/$(TARGET) -name settings.mk | \
+		xargs grep -he "RISCV_ARCH" | sed $(SED_RE_FLAG) 's/RISCV_ARCH.*=(.*)/\1/')
+	@echo target-tags: $(shell find $(TARGET_ROOT)/bsp/$(TARGET) -name settings.mk | \
+		xargs grep -he "TARGET_TAGS" | sed $(SED_RE_FLAG) 's/TARGET_TAGS.*=(.*)/\1/')
+
+# Find all options.mk with PROGRAM_REQUIRE_TAGS in PROGRAM_TAGS
+# Freedom Studio uses this macro.  Changing this macro may break Freedom Studio's
+# ability to create new projects.
+MATCHING_OPTIONS = $(shell scripts/filter-programs $(PROGRAM_ROOT)/software $(PROGRAM_REQUIRE_TAGS))
+
+# Get the name of the containing directory of all matching options.mk
+# Freedom Studio uses this macro.  Changing this macro may break Freedom Studio's
+# ability to create new projects.
+MATCHING_PROGRAMS = $(patsubst $(PROGRAM_ROOT)/software/%/,%,$(dir $(MATCHING_OPTIONS)))
+
 # Metal programs are any submodules in the software folder
 # Freedom Studio uses this target.  Changing this target may break Freedom Studio's
 # ability to create new projects.
 .PHONY: list-programs
 list-programs:
+ifneq ($(PROGRAM_REQUIRE_TAGS),)
+	@echo program-list: $(sort $(MATCHING_PROGRAMS))
+else
 	@echo program-list: $(shell ls $(PROGRAM_ROOT)/software)
+endif
+
+# Lists all available PROGRAM_TAGS
+#
+#  1. Find all options.mk
+#  2. Extract the PROGRAM_TAGS line
+#  3. Extract the value of PROGRAM_TAGS
+#  4. Split each tag onto a newline
+#  5. Sort the lines
+#  6. Find unique tags
+#
+# Freedom Studio uses this target.  Changing this target may break Freedom Studio's
+# ability to create new projects.
+.PHONY: list-program-tags
+list-program-tags:
+	@echo program-tags: $(shell find $(PROGRAM_ROOT)/software -name options.mk | \
+		xargs grep -he "PROGRAM_TAGS" | \
+		sed $(SED_RE_FLAG) 's/PROGRAM_TAGS.*=(.*)/\1/' | \
+		tr ' ' '\n' | \
+		sort | \
+		uniq)
+
+# Lists Freedom Studio specific info from the options.mk file for PROGRAM
+# The RISCV_REQS is used to signal which ISA extensions this PROGRAM requires: m, d, c, ...
+# The PROGRAM_TAGS is used to signal which features from FESDK this PROGRAM uses
+# Freedom Studio uses this target.  Changing this target may break Freedom Studio's
+# ability to create new projects.
+.PHONY: list-program-info
+list-program-info:
+	@echo riscv-reqs: $(shell find $(PROGRAM_ROOT)/software/$(PROGRAM) -name options.mk | \
+		xargs grep -he "RISCV_REQS" | sed $(SED_RE_FLAG) 's/RISCV_REQS.*=(.*)/\1/')
+	@echo program-tags: $(shell find $(PROGRAM_ROOT)/software/$(PROGRAM) -name options.mk | \
+		xargs grep -he "PROGRAM_TAGS" | sed $(SED_RE_FLAG) 's/PROGRAM_TAGS.*=(.*)/\1/')
 
 # Freedom Studio uses this target.  Changing this target may break Freedom Studio's
 # ability to create new projects.
@@ -220,7 +336,9 @@ list-options: list-programs list-targets
 # Import rules to build Freedom Metal
 #############################################################
 
+ifeq ($(NO_INCLUDES),)
 include scripts/libmetal.mk
+endif
 
 #############################################################
 # Standalone Project Export
@@ -247,25 +365,53 @@ standalone: \
 		freedom-metal \
 		debug.mk \
 		release.mk \
+		freedom-e-sdk.mk \
+		requirements.txt \
+		scripts/devicetree-overlay-generator \
+		scripts/ldscript-generator \
+		scripts/cmsis-svd-generator \
+		scripts/openocdcfg-generator \
+		scripts/esdk-settings-generator \
 		scripts/elf2hex \
 		scripts/standalone.mk \
-		scripts/libmetal.mk
+		scripts/libmetal.mk \
+		scripts/virtualenv.mk
 	cp -r $(addprefix $(BSP_DIR)/,$(filter-out build,$(shell ls $(BSP_DIR)))) $</bsp/
 
 	cp -r freedom-metal $</
-
 	find $</freedom-metal -name ".git*" | xargs rm -rf
 
 ifneq ($(shell grep FreeRTOS.mk $(SRC_DIR)/Makefile),)
 	cp -r FreeRTOS-metal $</
-
 	find $</FreeRTOS-metal -name ".git*" | xargs rm -rf
 endif
 
-	mkdir -p $</scripts
-	cp -r scripts/elf2hex $</scripts
+ifneq ($(shell grep scl.mk $(SRC_DIR)/Makefile),)
+	cp -r scl-metal $</
 
+	find $</scl-metal -name ".git*" | xargs rm -rf
+endif
+
+	mkdir -p $</scripts
+	cp scripts/virtualenv.mk $</scripts
+
+	cp -r scripts/elf2hex $</scripts
 	find $</scripts/elf2hex -name ".git*" | xargs rm -rf
+
+	cp -r scripts/devicetree-overlay-generator $</scripts
+	find $</scripts/devicetree-overlay-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/ldscript-generator $</scripts
+	find $</scripts/ldscript-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/cmsis-svd-generator $</scripts
+	find $</scripts/cmsis-svd-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/openocdcfg-generator $</scripts
+	find $</scripts/openocdcfg-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/esdk-settings-generator $</scripts
+	find $</scripts/esdk-settings-generator -name ".git*" | xargs rm -rf
 
 ifeq ($(PORT_DIR),)
 	$(MAKE) -C $(SRC_DIR) clean
@@ -276,12 +422,26 @@ endif
 
 	cp debug.mk $</debug.mk
 	cp release.mk $</release.mk
+	cp freedom-e-sdk.mk $</freedom-e-sdk.mk
+	cp requirements.txt $</requirements.txt
+
+	touch $</bsp/core.dts
+	touch $</bsp/design.dts
+	touch $</bsp/metal.default.lds
+	touch $</bsp/metal.ramrodata.lds
+	touch $</bsp/metal.scratchpad.lds
+	touch $</bsp/metal.freertos.lds
+	touch $</bsp/metal.h
+	touch $</bsp/metal-platform.h
+	touch $</bsp/design.svd
+	touch $</bsp/settings.mk
 
 	echo "PROGRAM = $(PROGRAM)" > $</Makefile
 	echo "TARGET = ${TARGET}" >> $</Makefile
 ifneq ($(PORT_DIR),)
 	echo "PORT_DIR = $(PORT_DIR)" >> $</Makefile
 endif
+	echo "include freedom-e-sdk.mk" >> $</Makefile
 	echo "" >> $</Makefile
 	echo "# The configuration defaults to Debug. Valid choices are:" >> $</Makefile
 	echo "#   - debug" >> $</Makefile
@@ -299,19 +459,49 @@ standalone: \
 		freedom-metal \
 		debug.mk \
 		release.mk \
+		freedom-e-sdk.mk \
+		requirements.txt \
+		scripts/devicetree-overlay-generator \
+		scripts/ldscript-generator \
+		scripts/cmsis-svd-generator \
+		scripts/openocdcfg-generator \
+		scripts/esdk-settings-generator \
 		scripts/standalone.mk \
-		scripts/libmetal.mk
+		scripts/libmetal.mk \
+		scripts/virtualenv.mk
 	cp -r $(addprefix $(BSP_DIR)/,$(filter-out build,$(shell ls $(BSP_DIR)))) $</bsp/
 
 	cp -r freedom-metal $</
-
 	find $</freedom-metal -name ".git*" | xargs rm -rf
 
 ifneq ($(shell grep FreeRTOS.mk $(SRC_DIR)/Makefile),)
 	cp -r FreeRTOS-metal $</
-
 	find $</FreeRTOS-metal -name ".git*" | xargs rm -rf
 endif
+
+ifneq ($(shell grep scl.mk $(SRC_DIR)/Makefile),)
+	cp -r scl-metal $</
+
+	find $</scl-metal -name ".git*" | xargs rm -rf
+endif
+
+	mkdir -p $</scripts
+	cp scripts/virtualenv.mk $</scripts
+
+	cp -r scripts/devicetree-overlay-generator $</scripts
+	find $</scripts/devicetree-overlay-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/ldscript-generator $</scripts
+	find $</scripts/ldscript-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/cmsis-svd-generator $</scripts
+	find $</scripts/cmsis-svd-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/openocdcfg-generator $</scripts
+	find $</scripts/openocdcfg-generator -name ".git*" | xargs rm -rf
+
+	cp -r scripts/esdk-settings-generator $</scripts
+	find $</scripts/esdk-settings-generator -name ".git*" | xargs rm -rf
 
 ifeq ($(PORT_DIR),)
 	$(MAKE) -C $(SRC_DIR) clean
@@ -322,12 +512,26 @@ endif
 
 	cp debug.mk $</debug.mk
 	cp release.mk $</release.mk
+	cp freedom-e-sdk.mk $</freedom-e-sdk.mk
+	cp requirements.txt $</requirements.txt
+
+	touch $</bsp/core.dts
+	touch $</bsp/design.dts
+	touch $</bsp/metal.default.lds
+	touch $</bsp/metal.ramrodata.lds
+	touch $</bsp/metal.scratchpad.lds
+	touch $</bsp/metal.freertos.lds
+	touch $</bsp/metal.h
+	touch $</bsp/metal-platform.h
+	touch $</bsp/design.svd
+	touch $</bsp/settings.mk
 
 	echo "PROGRAM = $(PROGRAM)" > $</Makefile
 	echo "TARGET = ${TARGET}" >> $</Makefile
 ifneq ($(PORT_DIR),)
 	echo "PORT_DIR = $(PORT_DIR)" >> $</Makefile
 endif
+	echo "include freedom-e-sdk.mk" >> $</Makefile
 	echo "" >> $</Makefile
 	echo "# The configuration defaults to Debug. Valid choices are:" >> $</Makefile
 	echo "#   - debug" >> $</Makefile
@@ -384,5 +588,3 @@ simulate:
 	@echo "No supported emulator for target $(TARGET)!"
 endif # findstring spike
 endif # findstring qemu
-
-

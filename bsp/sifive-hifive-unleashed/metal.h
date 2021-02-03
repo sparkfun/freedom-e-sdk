@@ -52,6 +52,16 @@
 
 #define __METAL_PLIC_NUM_PARENTS 9
 
+#define METAL_SIFIVE_CCACHE0_INTERRUPTS { 1, 2, 3, }
+
+#define METAL_SIFIVE_CCACHE0_INTERRUPT_PARENT &__metal_dt_interrupt_controller_c000000.controller
+
+#define METAL_CACHE_DRIVER_PREFIX sifive_ccache0
+
+#define METAL_SIFIVE_CCACHE0_PERFMON_COUNTERS 0
+
+#define __METAL_DT_SIFIVE_CCACHE0_HANDLE (struct metal_cache *)NULL
+
 #define __METAL_CLIC_SUBINTERRUPTS 0
 #define METAL_MAX_CLIC_INTERRUPTS 0
 
@@ -67,11 +77,21 @@
 
 #define METAL_MAX_I2C0_INTERRUPTS 0
 
+#define __METAL_PWM_10020000_INTERRUPTS 4
+
+#define __METAL_PWM_10021000_INTERRUPTS 4
+
+#define METAL_MAX_PWM0_INTERRUPTS 4
+
+#define METAL_MAX_PWM0_NCMP 4
+
 #define __METAL_SERIAL_10010000_INTERRUPTS 1
 
 #define __METAL_SERIAL_10011000_INTERRUPTS 1
 
 #define METAL_MAX_UART_INTERRUPTS 1
+
+#define METAL_MAX_SIMUART_INTERRUPTS 0
 
 
 #include <metal/drivers/fixed-clock.h>
@@ -81,98 +101,102 @@
 #include <metal/drivers/riscv_cpu.h>
 #include <metal/drivers/riscv_plic0.h>
 #include <metal/pmp.h>
+#include <metal/drivers/sifive_ccache0.h>
 #include <metal/drivers/sifive_gpio0.h>
 #include <metal/drivers/sifive_i2c0.h>
+#include <metal/drivers/sifive_pwm0.h>
 #include <metal/drivers/sifive_spi0.h>
 #include <metal/drivers/sifive_test0.h>
 #include <metal/drivers/sifive_uart0.h>
-#include <metal/drivers/sifive_fu540-c000_l2.h>
 
 /* From refclk */
-struct __metal_driver_fixed_clock __metal_dt_refclk;
+extern struct __metal_driver_fixed_clock __metal_dt_refclk;
 
 /* From tlclk */
-struct __metal_driver_fixed_factor_clock __metal_dt_tlclk;
+extern struct __metal_driver_fixed_factor_clock __metal_dt_tlclk;
 
-struct metal_memory __metal_dt_mem_dtim_1000000;
+extern struct metal_memory __metal_dt_mem_dtim_1000000;
 
-struct metal_memory __metal_dt_mem_itim_1800000;
+extern struct metal_memory __metal_dt_mem_itim_1800000;
 
-struct metal_memory __metal_dt_mem_itim_1808000;
+extern struct metal_memory __metal_dt_mem_itim_1808000;
 
-struct metal_memory __metal_dt_mem_itim_1810000;
+extern struct metal_memory __metal_dt_mem_itim_1810000;
 
-struct metal_memory __metal_dt_mem_itim_1818000;
+extern struct metal_memory __metal_dt_mem_itim_1818000;
 
-struct metal_memory __metal_dt_mem_itim_1820000;
+extern struct metal_memory __metal_dt_mem_itim_1820000;
 
-struct metal_memory __metal_dt_mem_memory_80000000;
+extern struct metal_memory __metal_dt_mem_memory_80000000;
 
-struct metal_memory __metal_dt_mem_spi_10040000;
+extern struct metal_memory __metal_dt_mem_spi_10040000;
 
-struct metal_memory __metal_dt_mem_spi_10041000;
+extern struct metal_memory __metal_dt_mem_spi_10041000;
 
-struct metal_memory __metal_dt_mem_spi_10050000;
+extern struct metal_memory __metal_dt_mem_spi_10050000;
 
 /* From clint@2000000 */
-struct __metal_driver_riscv_clint0 __metal_dt_clint_2000000;
+extern struct __metal_driver_riscv_clint0 __metal_dt_clint_2000000;
 
 /* From cpu@0 */
-struct __metal_driver_cpu __metal_dt_cpu_0;
+extern struct __metal_driver_cpu __metal_dt_cpu_0;
 
 /* From cpu@1 */
-struct __metal_driver_cpu __metal_dt_cpu_1;
+extern struct __metal_driver_cpu __metal_dt_cpu_1;
 
 /* From cpu@2 */
-struct __metal_driver_cpu __metal_dt_cpu_2;
+extern struct __metal_driver_cpu __metal_dt_cpu_2;
 
 /* From cpu@3 */
-struct __metal_driver_cpu __metal_dt_cpu_3;
+extern struct __metal_driver_cpu __metal_dt_cpu_3;
 
 /* From cpu@4 */
-struct __metal_driver_cpu __metal_dt_cpu_4;
+extern struct __metal_driver_cpu __metal_dt_cpu_4;
 
-struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_0_interrupt_controller;
+extern struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_0_interrupt_controller;
 
-struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_1_interrupt_controller;
+extern struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_1_interrupt_controller;
 
-struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_2_interrupt_controller;
+extern struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_2_interrupt_controller;
 
-struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_3_interrupt_controller;
+extern struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_3_interrupt_controller;
 
-struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_4_interrupt_controller;
+extern struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_4_interrupt_controller;
 
 /* From interrupt_controller@c000000 */
-struct __metal_driver_riscv_plic0 __metal_dt_interrupt_controller_c000000;
+extern struct __metal_driver_riscv_plic0 __metal_dt_interrupt_controller_c000000;
 
-struct metal_pmp __metal_dt_pmp;
+extern struct metal_pmp __metal_dt_pmp;
 
 /* From gpio@10060000 */
-struct __metal_driver_sifive_gpio0 __metal_dt_gpio_10060000;
+extern struct __metal_driver_sifive_gpio0 __metal_dt_gpio_10060000;
 
 /* From i2c@10030000 */
-struct __metal_driver_sifive_i2c0 __metal_dt_i2c_10030000;
+extern struct __metal_driver_sifive_i2c0 __metal_dt_i2c_10030000;
+
+/* From pwm@10020000 */
+extern struct __metal_driver_sifive_pwm0 __metal_dt_pwm_10020000;
+
+/* From pwm@10021000 */
+extern struct __metal_driver_sifive_pwm0 __metal_dt_pwm_10021000;
 
 /* From spi@10040000 */
-struct __metal_driver_sifive_spi0 __metal_dt_spi_10040000;
+extern struct __metal_driver_sifive_spi0 __metal_dt_spi_10040000;
 
 /* From spi@10041000 */
-struct __metal_driver_sifive_spi0 __metal_dt_spi_10041000;
+extern struct __metal_driver_sifive_spi0 __metal_dt_spi_10041000;
 
 /* From spi@10050000 */
-struct __metal_driver_sifive_spi0 __metal_dt_spi_10050000;
+extern struct __metal_driver_sifive_spi0 __metal_dt_spi_10050000;
 
 /* From teststatus@4000 */
-struct __metal_driver_sifive_test0 __metal_dt_teststatus_4000;
+extern struct __metal_driver_sifive_test0 __metal_dt_teststatus_4000;
 
 /* From serial@10010000 */
-struct __metal_driver_sifive_uart0 __metal_dt_serial_10010000;
+extern struct __metal_driver_sifive_uart0 __metal_dt_serial_10010000;
 
 /* From serial@10011000 */
-struct __metal_driver_sifive_uart0 __metal_dt_serial_10011000;
-
-/* From cache_controller@2010000 */
-struct __metal_driver_sifive_fu540_c000_l2 __metal_dt_cache_controller_2010000;
+extern struct __metal_driver_sifive_uart0 __metal_dt_serial_10011000;
 
 
 
@@ -418,6 +442,28 @@ static __inline__ int __metal_driver_cpu_num_pmp_regions(struct metal_cpu *cpu)
 	}
 }
 
+static __inline__ struct metal_buserror * __metal_driver_cpu_buserror(struct metal_cpu *cpu)
+{
+	if ((uintptr_t)cpu == (uintptr_t)&__metal_dt_cpu_0) {
+		return NULL;
+	}
+	else if ((uintptr_t)cpu == (uintptr_t)&__metal_dt_cpu_1) {
+		return NULL;
+	}
+	else if ((uintptr_t)cpu == (uintptr_t)&__metal_dt_cpu_2) {
+		return NULL;
+	}
+	else if ((uintptr_t)cpu == (uintptr_t)&__metal_dt_cpu_3) {
+		return NULL;
+	}
+	else if ((uintptr_t)cpu == (uintptr_t)&__metal_dt_cpu_4) {
+		return NULL;
+	}
+	else {
+		return NULL;
+	}
+}
+
 
 
 /* --------------------- sifive_plic0 ------------ */
@@ -553,7 +599,7 @@ static __inline__ int __metal_driver_sifive_plic0_context_ids(int hartid)
 
 
 
-/* --------------------- sifive_ccache0 ------------ */
+/* --------------------- sifive_buserror0 ------------ */
 
 
 /* --------------------- sifive_clic0 ------------ */
@@ -755,6 +801,162 @@ static __inline__ int __metal_driver_sifive_i2c0_interrupt_line(struct metal_i2c
 
 
 
+/* --------------------- sifive_pwm0 ------------ */
+static __inline__ unsigned long __metal_driver_sifive_pwm0_control_base(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return METAL_SIFIVE_PWM0_10020000_BASE_ADDRESS;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return METAL_SIFIVE_PWM0_10021000_BASE_ADDRESS;
+	}
+	else {
+		return 0;
+	}
+}
+
+static __inline__ unsigned long __metal_driver_sifive_pwm0_control_size(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return METAL_SIFIVE_PWM0_10020000_SIZE;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return METAL_SIFIVE_PWM0_10021000_SIZE;
+	}
+	else {
+		return 0;
+	}
+}
+
+static __inline__ struct metal_clock * __metal_driver_sifive_pwm0_clock(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return (struct metal_clock *)&__metal_dt_tlclk.clock;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return (struct metal_clock *)&__metal_dt_tlclk.clock;
+	}
+	else {
+		return NULL;
+	}
+}
+
+static __inline__ struct __metal_driver_sifive_gpio0 * __metal_driver_sifive_pwm0_pinmux(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return NULL;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return NULL;
+	}
+	else {
+		return NULL;
+	}
+}
+
+static __inline__ unsigned long __metal_driver_sifive_pwm0_pinmux_output_selector(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return 0;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return 0;
+	}
+	else {
+		return 0;
+	}
+}
+
+static __inline__ unsigned long __metal_driver_sifive_pwm0_pinmux_source_selector(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return 0;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return 0;
+	}
+	else {
+		return 0;
+	}
+}
+
+static __inline__ int __metal_driver_sifive_pwm0_num_interrupts(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return __METAL_PWM_10020000_INTERRUPTS;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return __METAL_PWM_10021000_INTERRUPTS;
+	}
+	else {
+		return 0;
+	}
+}
+
+static __inline__ struct metal_interrupt * __metal_driver_sifive_pwm0_interrupt_parent(struct metal_pwm *pwm)
+{
+		return (struct metal_interrupt *)&__metal_dt_interrupt_controller_c000000.controller;
+}
+
+static __inline__ int __metal_driver_sifive_pwm0_interrupt_lines(struct metal_pwm *pwm, int idx)
+{
+	if (((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) && (idx == 0)) {
+		return 42;
+	}
+	else if ((((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) && (idx == 1))) {
+		return 43;
+	}
+	else if ((((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) && (idx == 2))) {
+		return 44;
+	}
+	else if ((((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) && (idx == 3))) {
+		return 45;
+	}
+	else if ((((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) && (idx == 0))) {
+		return 46;
+	}
+	else if ((((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) && (idx == 1))) {
+		return 47;
+	}
+	else if ((((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) && (idx == 2))) {
+		return 48;
+	}
+	else if ((((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) && (idx == 3))) {
+		return 49;
+	}
+	else {
+		return 0;
+	}
+}
+
+static __inline__ int __metal_driver_sifive_pwm0_compare_width(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return 16;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return 16;
+	}
+	else {
+		return 0;
+	}
+}
+
+static __inline__ int __metal_driver_sifive_pwm0_comparator_count(struct metal_pwm *pwm)
+{
+	if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10020000) {
+		return 4;
+	}
+	else if ((uintptr_t)pwm == (uintptr_t)&__metal_dt_pwm_10021000) {
+		return 4;
+	}
+	else {
+		return 0;
+	}
+}
+
+
+
 /* --------------------- sifive_rtc0 ------------ */
 
 static __inline__ unsigned long __metal_driver_sifive_spi0_control_base(struct metal_spi *spi)
@@ -926,7 +1128,7 @@ static __inline__ struct metal_interrupt * __metal_driver_sifive_uart0_interrupt
 		return (struct metal_interrupt *)&__metal_dt_interrupt_controller_c000000.controller;
 	}
 	else if ((uintptr_t)uart == (uintptr_t)&__metal_dt_serial_10011000) {
-		return NULL;
+		return (struct metal_interrupt *)&__metal_dt_interrupt_controller_c000000.controller;
 	}
 	else {
 		return 0;
@@ -1000,6 +1202,9 @@ static __inline__ unsigned long __metal_driver_sifive_uart0_pinmux_source_select
 
 
 
+/* --------------------- sifive_simuart0 ------------ */
+
+
 /* --------------------- sifive_wdog0 ------------ */
 
 
@@ -1016,19 +1221,6 @@ static __inline__ unsigned long __metal_driver_sifive_uart0_pinmux_source_select
 
 
 /* --------------------- sifive_fe310_g000_prci ------------ */
-
-
-/* --------------------- sifive_fu540_c000_l2 ------------ */
-static __inline__ uintptr_t __metal_driver_sifive_fu540_c000_l2_control_base(struct metal_cache *cache)
-{
-	if ((uintptr_t)cache == (uintptr_t)&__metal_dt_cache_controller_2010000) {
-		return METAL_SIFIVE_FU540_C000_L2_2010000_BASE_ADDRESS;
-	}
-	else {
-		return 0;
-	}
-}
-
 
 
 #define __METAL_DT_MAX_MEMORIES 9
@@ -1119,6 +1311,13 @@ __asm__ (".weak __metal_i2c_table");
 struct __metal_driver_sifive_i2c0 *__metal_i2c_table[] = {
 					&__metal_dt_i2c_10030000};
 
+#define __METAL_DT_MAX_PWMS 2
+
+__asm__ (".weak __metal_pwm_table");
+struct __metal_driver_sifive_pwm0 *__metal_pwm_table[] = {
+					&__metal_dt_pwm_10020000,
+					&__metal_dt_pwm_10021000};
+
 #define __METAL_DT_MAX_RTCS 0
 
 __asm__ (".weak __metal_rtc_table");
@@ -1144,16 +1343,16 @@ struct __metal_driver_sifive_uart0 *__metal_uart_table[] = {
 					&__metal_dt_serial_10010000,
 					&__metal_dt_serial_10011000};
 
+#define __METAL_DT_MAX_SIMUARTS 0
+
+__asm__ (".weak __metal_simuart_table");
+struct __metal_driver_sifive_simuart0 *__metal_simuart_table[] = {
+					NULL };
 #define __METAL_DT_MAX_WDOGS 0
 
 __asm__ (".weak __metal_wdog_table");
 struct __metal_driver_sifive_wdog0 *__metal_wdog_table[] = {
 					NULL };
-/* From cache_controller@2010000 */
-#define __METAL_DT_SIFIVE_FU540_C000_L2_HANDLE (&__metal_dt_cache_controller_2010000.cache)
-
-#define __METAL_DT_CACHE_CONTROLLER_2010000_HANDLE (&__metal_dt_cache_controller_2010000.cache)
-
 #endif /* MACROS_ELSE_METAL_H*/
 
 #endif /* ! __METAL_MACHINE_MACROS */

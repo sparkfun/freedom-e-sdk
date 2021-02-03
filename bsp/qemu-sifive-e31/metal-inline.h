@@ -31,6 +31,7 @@ extern __inline__ int __metal_driver_cpu_hartid(struct metal_cpu *cpu);
 extern __inline__ int __metal_driver_cpu_timebase(struct metal_cpu *cpu);
 extern __inline__ struct metal_interrupt * __metal_driver_cpu_interrupt_controller(struct metal_cpu *cpu);
 extern __inline__ int __metal_driver_cpu_num_pmp_regions(struct metal_cpu *cpu);
+extern __inline__ struct metal_buserror * __metal_driver_cpu_buserror(struct metal_cpu *cpu);
 
 
 /* --------------------- sifive_plic0 ------------ */
@@ -43,7 +44,7 @@ extern __inline__ int __metal_driver_sifive_plic0_interrupt_lines(struct metal_i
 extern __inline__ int __metal_driver_sifive_plic0_context_ids(int hartid);
 
 
-/* --------------------- sifive_ccache0 ------------ */
+/* --------------------- sifive_buserror0 ------------ */
 
 
 /* --------------------- sifive_clic0 ------------ */
@@ -81,6 +82,20 @@ extern __inline__ char * __metal_driver_sifive_gpio_led_label(struct metal_led *
 /* --------------------- sifive_i2c0 ------------ */
 
 
+/* --------------------- sifive_pwm0 ------------ */
+extern __inline__ unsigned long __metal_driver_sifive_pwm0_control_base(struct metal_pwm *pwm);
+extern __inline__ unsigned long __metal_driver_sifive_pwm0_control_size(struct metal_pwm *pwm);
+extern __inline__ int __metal_driver_sifive_pwm0_num_interrupts(struct metal_pwm *pwm);
+extern __inline__ struct metal_interrupt * __metal_driver_sifive_pwm0_interrupt_parent(struct metal_pwm *pwm);
+extern __inline__ int __metal_driver_sifive_pwm0_interrupt_lines(struct metal_pwm *pwm, int idx);
+extern __inline__ struct metal_clock * __metal_driver_sifive_pwm0_clock(struct metal_pwm *pwm);
+extern __inline__ struct __metal_driver_sifive_gpio0 * __metal_driver_sifive_pwm0_pinmux(struct metal_pwm *pwm);
+extern __inline__ unsigned long __metal_driver_sifive_pwm0_pinmux_output_selector(struct metal_pwm *pwm);
+extern __inline__ unsigned long __metal_driver_sifive_pwm0_pinmux_source_selector(struct metal_pwm *pwm);
+extern __inline__ int __metal_driver_sifive_pwm0_compare_width(struct metal_pwm *pwm);
+extern __inline__ int __metal_driver_sifive_pwm0_comparator_count(struct metal_pwm *pwm);
+
+
 /* --------------------- sifive_rtc0 ------------ */
 extern __inline__ unsigned long __metal_driver_sifive_rtc0_control_base(const struct metal_rtc *const rtc);
 extern __inline__ unsigned long __metal_driver_sifive_rtc0_control_size(const struct metal_rtc *const rtc);
@@ -114,6 +129,9 @@ extern __inline__ struct metal_clock * __metal_driver_sifive_uart0_clock(struct 
 extern __inline__ struct __metal_driver_sifive_gpio0 * __metal_driver_sifive_uart0_pinmux(struct metal_uart *uart);
 extern __inline__ unsigned long __metal_driver_sifive_uart0_pinmux_output_selector(struct metal_uart *uart);
 extern __inline__ unsigned long __metal_driver_sifive_uart0_pinmux_source_selector(struct metal_uart *uart);
+
+
+/* --------------------- sifive_simuart0 ------------ */
 
 
 /* --------------------- sifive_wdog0 ------------ */
@@ -158,9 +176,6 @@ extern __inline__ long __metal_driver_sifive_fe310_g000_pll_init_rate( );
 extern __inline__ long __metal_driver_sifive_fe310_g000_prci_base( );
 extern __inline__ long __metal_driver_sifive_fe310_g000_prci_size( );
 extern __inline__ const struct __metal_driver_vtable_sifive_fe310_g000_prci * __metal_driver_sifive_fe310_g000_prci_vtable( );
-
-
-/* --------------------- sifive_fu540_c000_l2 ------------ */
 
 
 /* From clock@0 */
@@ -209,6 +224,7 @@ struct __metal_driver_riscv_clint0 __metal_dt_clint_2000000 = {
 /* From cpu@0 */
 struct __metal_driver_cpu __metal_dt_cpu_0 = {
     .cpu.vtable = &__metal_driver_vtable_cpu.cpu_vtable,
+    .hpm_count = 0,
 };
 
 /* From interrupt_controller */
@@ -234,19 +250,24 @@ struct __metal_driver_sifive_gpio0 __metal_dt_gpio_10012000 = {
     .gpio.vtable = &__metal_driver_vtable_sifive_gpio0.gpio,
 };
 
-/* From led@0red */
-struct __metal_driver_sifive_gpio_led __metal_dt_led_0red = {
+/* From led@0 */
+struct __metal_driver_sifive_gpio_led __metal_dt_led_0 = {
     .led.vtable = &__metal_driver_vtable_sifive_led.led_vtable,
 };
 
-/* From led@0green */
-struct __metal_driver_sifive_gpio_led __metal_dt_led_0green = {
+/* From led@1 */
+struct __metal_driver_sifive_gpio_led __metal_dt_led_1 = {
     .led.vtable = &__metal_driver_vtable_sifive_led.led_vtable,
 };
 
-/* From led@0blue */
-struct __metal_driver_sifive_gpio_led __metal_dt_led_0blue = {
+/* From led@2 */
+struct __metal_driver_sifive_gpio_led __metal_dt_led_2 = {
     .led.vtable = &__metal_driver_vtable_sifive_led.led_vtable,
+};
+
+/* From pwm@10015000 */
+struct __metal_driver_sifive_pwm0 __metal_dt_pwm_10015000 = {
+    .pwm.vtable = &__metal_driver_vtable_sifive_pwm0.pwm,
 };
 
 /* From aon@10000000 */

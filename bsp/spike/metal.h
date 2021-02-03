@@ -56,7 +56,13 @@
 
 #define METAL_MAX_I2C0_INTERRUPTS 0
 
+#define METAL_MAX_PWM0_INTERRUPTS 0
+
+#define METAL_MAX_PWM0_NCMP 0
+
 #define METAL_MAX_UART_INTERRUPTS 0
+
+#define METAL_MAX_SIMUART_INTERRUPTS 0
 
 
 #include <metal/drivers/fixed-clock.h>
@@ -66,21 +72,21 @@
 #include <metal/pmp.h>
 #include <metal/drivers/ucb_htif0.h>
 
-struct metal_memory __metal_dt_mem_memory_80000000;
+extern struct metal_memory __metal_dt_mem_memory_80000000;
 
 /* From clint@2000000 */
-struct __metal_driver_riscv_clint0 __metal_dt_clint_2000000;
+extern struct __metal_driver_riscv_clint0 __metal_dt_clint_2000000;
 
 /* From cpu@0 */
-struct __metal_driver_cpu __metal_dt_cpu_0;
+extern struct __metal_driver_cpu __metal_dt_cpu_0;
 
-struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_0_interrupt_controller;
-
-/* From htif */
-struct __metal_driver_ucb_htif0_shutdown __metal_dt_htif_shutdown;
+extern struct __metal_driver_riscv_cpu_intc __metal_dt_cpu_0_interrupt_controller;
 
 /* From htif */
-struct __metal_driver_ucb_htif0_uart __metal_dt_htif_uart;
+extern struct __metal_driver_ucb_htif0_shutdown __metal_dt_htif_shutdown;
+
+/* From htif */
+extern struct __metal_driver_ucb_htif0_uart __metal_dt_htif_uart;
 
 
 
@@ -190,12 +196,22 @@ static __inline__ int __metal_driver_cpu_num_pmp_regions(struct metal_cpu *cpu)
 	}
 }
 
+static __inline__ struct metal_buserror * __metal_driver_cpu_buserror(struct metal_cpu *cpu)
+{
+	if ((uintptr_t)cpu == (uintptr_t)&__metal_dt_cpu_0) {
+		return NULL;
+	}
+	else {
+		return NULL;
+	}
+}
+
 
 
 /* --------------------- sifive_plic0 ------------ */
 
 
-/* --------------------- sifive_ccache0 ------------ */
+/* --------------------- sifive_buserror0 ------------ */
 
 
 /* --------------------- sifive_clic0 ------------ */
@@ -222,6 +238,9 @@ static __inline__ int __metal_driver_cpu_num_pmp_regions(struct metal_cpu *cpu)
 /* --------------------- sifive_i2c0 ------------ */
 
 
+/* --------------------- sifive_pwm0 ------------ */
+
+
 /* --------------------- sifive_rtc0 ------------ */
 
 
@@ -232,6 +251,9 @@ static __inline__ int __metal_driver_cpu_num_pmp_regions(struct metal_cpu *cpu)
 /* --------------------- sifive_trace ------------ */
 
 /* --------------------- sifive_uart0 ------------ */
+
+
+/* --------------------- sifive_simuart0 ------------ */
 
 
 /* --------------------- sifive_wdog0 ------------ */
@@ -250,9 +272,6 @@ static __inline__ int __metal_driver_cpu_num_pmp_regions(struct metal_cpu *cpu)
 
 
 /* --------------------- sifive_fe310_g000_prci ------------ */
-
-
-/* --------------------- sifive_fu540_c000_l2 ------------ */
 
 
 #define __METAL_DT_MAX_MEMORIES 1
@@ -302,6 +321,11 @@ struct __metal_driver_sifive_gpio_switch *__metal_switch_table[] = {
 __asm__ (".weak __metal_i2c_table");
 struct __metal_driver_sifive_i2c0 *__metal_i2c_table[] = {
 					NULL };
+#define __METAL_DT_MAX_PWMS 0
+
+__asm__ (".weak __metal_pwm_table");
+struct __metal_driver_sifive_pwm0 *__metal_pwm_table[] = {
+					NULL };
 #define __METAL_DT_MAX_RTCS 0
 
 __asm__ (".weak __metal_rtc_table");
@@ -316,6 +340,11 @@ struct __metal_driver_sifive_spi0 *__metal_spi_table[] = {
 
 __asm__ (".weak __metal_uart_table");
 struct __metal_driver_sifive_uart0 *__metal_uart_table[] = {
+					NULL };
+#define __METAL_DT_MAX_SIMUARTS 0
+
+__asm__ (".weak __metal_simuart_table");
+struct __metal_driver_sifive_simuart0 *__metal_simuart_table[] = {
 					NULL };
 #define __METAL_DT_MAX_WDOGS 0
 

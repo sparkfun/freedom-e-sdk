@@ -49,23 +49,30 @@ operating systems to RISC-V.
     within a single target directory in `bsp/<target>/`. For example, the HiFive 1
     board support files for Freedom Metal are entirely within `bsp/sifive-hifive1/`
     and consist of the following:
-    * design.dts
+    * design.dts, core.dts
       - The DeviceTree description of the target. This file is used to parameterize
-        the Freedom Metal library to the target device. It is included as reference
-        so that users of Freedom Metal are aware of what features and peripherals
-        are available on the target.
-    * metal.h
-      - The Freedom Metal machine header which is used internally to Freedom Metal
-        to instantiate structures to support the target device.
+        the Freedom Metal library to the target device. Modifications to these files
+        are propagated to the generated files by freedom-devicetree-tools.
+    * metal.h, metal-inline.h
+      - The Freedom Metal machine headers are generated files which are used internally
+        to Freedom Metal to instantiate structures to support the target device.
+    * metal-platform.h
+      - The Freedom Metal platform header provides a list of C proprocessor definitions
+        which are used by Freedom Metal to indicate the presence of devices and provide
+        the memory-mapped register interface for each device. The contents of this header
+        is considered public API surface of the Metal library and can be used in applications
+        by including `metal/machine/platform.h`.
     * metal.%.lds
       - Generated linker scripts for the target. The different scripts allow
         for different memory configurations.
     * openocd.cfg (for development board and FPGA targets)
       - Used to configure OpenOCD for flashing and debugging the target device.
     * settings.mk
-      - Used to set `-march` and `-mabi` arguments to the RISC-V GNU Toolchain.
-* FreeRTOS (found under `FreeRTOS-metal/`): it is a class of RTOS that is designed to be small enough to run on a microcontroller – although its use is not limited to microcontroller applications. (please visit [https://www.freertos.org](https://www.freertos.org/) for more details). Please read the license before to use it (available into the FreeRTOS subdirectory)
-* SEGGER_SystemView (found under `SEGGER_SystemView-metal/`): it is a real-time recording and visualization tool for embedded systems that reveals the true runtime behavior of an application, going far deeper than the system insights provided by debuggers. This is particularly effective when developing and working with complex embedded systems comprising multiple threads and interrupts: SystemView can ensure a system performs as designed, can track down inefficiencies, and show unintended interactions and resource conflicts, with a focus on details of every single system ticks.
+      - Includes a variety of parameters which affect the build system for the target, including
+        the RISC-V ISA string, the selected ABI, the code model, and more.
+* [FreeRTOS](https://www.freertos.org/) (found under `FreeRTOS-metal/`):
+  - A class of RTOS that is designed to be small enough to run on a microcontroller
+  - Provided here under its own license
 * A Few Example Programs (found under `software/`)
   - empty
     - An empty project. Serves as a good starting point for your own program.
@@ -128,8 +135,20 @@ operating systems to RISC-V.
       atomic instruction set.
   - example-i2c
     - Demonstrates usage of the I2C API to communicate with I2C slaves.
+  - example-pwm
+    - Demonstrates usage of the PWM API to generate waveforms.
   - mem-latency
     - A memory test that measure the latency at different cache layers and memory blocks
+  - example-hpm
+    - Demonstrates usage of the RISC-V hardware performance counter APIs.
+  - example-l2pm
+    - Demonstrates usage of Sifive L2 performance monitor counter APIs to capture L2 cache event logs.
+  - example-l2pf
+    - Example for usage and measuring effectiveness of SiFive L2 Prefetcher.
+  - example-lim
+    - Demonstrates how to designate a function to be linked into the LIM (Loosely-Integrated Memory).
+  - example-freertos-minimal
+    - A simple FreeRTOS skeleton to build your FreeRTOS application.
   - example-freertos-blinky
     - A simple FreeRTOS blinky application.
 
@@ -145,12 +164,17 @@ To use this SDK, you will need the following software available on your machine:
 * RISC-V QEMU 4.1.0 (for use with the qemu-sifive-\* simulation targets)
 * RISC-V OpenOCD (for use with development board and FPGA targets)
 * Segger J-LINK (for use with certain development boards)
+* Python >= 3.5
+* Python Virtualenv
+* Python Pip
+
+Details on installing the RISC-V and Segger software follow. 
 
 ##### Install the RISC-V Toolchain and OpenOCD #####
 
 The RISC-V GNU Toolchain and OpenOCD are available from the SiFive Website at
 
-https://www.sifive.com/boards
+https://www.sifive.com/software
 
 For OpenOCD and/or RISC-V GNU Toolchain, download the .tar.gz for your platform,
 and unpack it to your desired location. Then, use the `RISCV_PATH` and
@@ -170,7 +194,7 @@ export RISCV_PATH=/my/desired/location/riscv64-unknown-elf-gcc-<date>-<version>
 
 The RISC-V QEMU Emulator is available from the SiFive Website at
 
-https://www.sifive.com/boards
+https://www.sifive.com/software
 
 Download the .tar.gz for your platform and unpack it to your desired location.
 Then, add QEMU to your path:
@@ -216,6 +240,47 @@ git pull origin master
 git submodule update --init --recursive
 ```
 
+### Python ###
+
+Freedom E SDK includes a number of Python scripts used during the build process
+to parameterize the build of Freedom Metal to the target. The dependencies of
+these scripts are tracked in `requirements.txt`. Freedom E SDK manages its own
+virtualenv, but there are some options which allow users to configure the
+virtualenv to best suit your needs.
+
+#### Predownloading Python Dependencies ####
+
+By default, Freedom E SDK will download Python packages from the Python Package
+Index when it creates the virtualenv. If you prefer to download dependencies
+ahead-of-time, you can run
+
+```
+make pip-cache
+```
+
+to download all Python packages. This mechanism downloads all of the dependencies
+pre-compiled for all platforms and Python versions supported by Freedom E SDK, so
+if you're trying to bring up Freedom E SDK on a system without an internet connection
+you can create the "pip cache" and then copy it to the connectionless machine with
+Freedom E SDK.
+
+The location of the "pip cache" can be controlled with the environment variable
+`FREEDOM_E_SDK_PIP_CACHE_PATH`
+
+```
+export FREEDOM_E_SDK_PIP_CACHE_PATH=/path/to/pip-cache
+```
+
+#### Virtualenv Location ####
+
+By default, the virtualenv is created in the `venv` folder at the root of
+Freedom E SDK. To change the location of the virtualenv, set the environment
+variable `FREEDOM_E_SDK_VENV_PATH`
+
+```
+export FREEDOM_E_SDK_VENV_PATH=/path/to/venv
+```
+
 ### Using the Tools ###
 
 #### Building an Example ####
@@ -223,12 +288,12 @@ git submodule update --init --recursive
 To compile a bare-metal RISC-V program:
 
 ```
-make [PROGRAM=hello] [TARGET=sifive-hifive1] [CONFIGURATION=debug] software
+make [PROGRAM=hello] [TARGET=freedom-e310-arty] [CONFIGURATION=debug] software
 ```
 
 The square brackets in the above command indicate optional parameters for the
 Make invocation. As you can see, the default values of these parameters tell
-the build script to build the `hello` example for the `sifive-hifive1` target
+the build script to build the `hello` example for the `freedom-e310-arty` target
 with the `debug` configuration. If, for example, you wished to build the
 `timer-interrupt` example for the S51 Arty FPGA Evaluation target,
 with the `release` configuration, you would instead run the command
@@ -245,6 +310,16 @@ been created for its optimal run.
 
 ```
 make PROGRAM=dhrystone TARGET=coreip-e31-arty LINK_TARGET=ramrodata software
+```
+
+##### Building an Example with FreeRTOS ####
+
+A link target exist specificly for freertos, even if default target might work
+on some examples.
+Here is an exemple of use :
+
+```
+make PROGRAM=example-freertos-blinky-pmp TARGET=sifive-hifive1-revb LINK_TARGET=freertos software
 ```
 
 #### Uploading to the Target Board ####
@@ -284,4 +359,4 @@ Run `make help` for more commands.
 
 Documentation, Forums, and much more available at
 
-[dev.sifive.com](https://dev.sifive.com)
+[www.sifive.com](https://www.sifive.com)
